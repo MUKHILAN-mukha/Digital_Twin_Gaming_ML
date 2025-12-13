@@ -1,7 +1,10 @@
+# api/main.py
+
 from fastapi import FastAPI
 from api.ml_routes import router as ml_router
 
-app = FastAPI()
+app = FastAPI(
+    title="Gaming Behavior ML Engine (Member 3)",
+)
 
-# Register ML analyzer routes
 app.include_router(ml_router)
