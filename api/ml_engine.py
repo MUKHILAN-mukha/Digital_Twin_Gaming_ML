@@ -1,17 +1,38 @@
-from ml.features import extract_features
-from analysis.rules import evaluate_rules
 import joblib
+from ml.features import extract_features
 
-clf, encoder = joblib.load("ml/model.pkl")
+# load ONCE
+import os
 
-def analyze_with_ml(twin):
+BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+MODEL_PATH = os.path.join(BASE_DIR, "ml", "model.pkl")
+
+model, encoder = joblib.load(MODEL_PATH)
+
+
+def analyze_with_ml(twin: dict):
     features = extract_features(twin)
-    ml_pred_num = clf.predict([features])[0]
-    ml_label = encoder.inverse_transform([ml_pred_num])[0]
 
-    rule_flags = evaluate_rules(twin)
+    # ML prediction
+    pred_num = model.predict([features])[0]
+    state = encoder.inverse_transform([pred_num])[0]
+
+    alerts = []
+    severity = "Low"
+
+    if state == "Excessive":
+        severity = "High"
+        alerts.append("Daily usage exceeded threshold")
+
+        if twin["aggregates"]["night_minutes"] > twin["thresholds"]["night"]:
+            alerts.append("Late night gaming detected")
+
+    elif state == "Moderate":
+        severity = "Medium"
+        alerts.append("Gaming time approaching limit")
 
     return {
-        "ml_prediction": ml_label,
-        "rule_flags": rule_flags
+        "state": state,
+        "severity": severity,
+        "alertmessage": alerts
     }

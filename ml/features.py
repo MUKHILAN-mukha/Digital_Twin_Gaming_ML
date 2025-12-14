@@ -6,6 +6,4 @@ def extract_features(twin):
     night = agg["night_minutes"]
     sessions = agg["sessions_per_day"]
 
-    ratio = today / max(weekly, 1)
-
-    return [today, weekly, night, sessions, ratio]
+    return [today, weekly, night, sessions]
